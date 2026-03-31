@@ -15,7 +15,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   body{background:linear-gradient(160deg,var(--sky),var(--sky2));min-height:100vh;min-height:100dvh;font-family:'Sniglet',sans-serif;color:var(--text);display:flex;flex-direction:column;align-items:center;padding:0 0 24px;overflow-x:hidden;}
-  body::before{content:'â­ðŸŽµðŸŽ¶ðŸŒŸâœ¨ðŸŽµâ­ðŸŽ¶';position:fixed;top:0;left:0;right:0;font-size:24px;letter-spacing:40px;opacity:.10;pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;animation:floatBg 18s linear infinite;}
+  body::before{content:'⭐🎵🎶🌟✨🎵⭐🎶';position:fixed;top:0;left:0;right:0;font-size:24px;letter-spacing:40px;opacity:.10;pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;animation:floatBg 18s linear infinite;}
   @keyframes floatBg{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
   .header{width:100%;text-align:center;padding:18px 16px 6px;}
@@ -90,19 +90,19 @@
 <body>
 
 <div class="start-screen" id="startScreen">
-  <div class="mascot">ðŸŽ¹</div>
+  <div class="mascot">🎹</div>
   <div class="start-title">Piano Interval</div>
-  <div class="level-badge">â­ Primary 1 â€” Jarak 1 & 2</div>
-  <div class="start-sub">Temukan tuts untuk not <span style="color:#9333ea">ðŸŸ£ ungu</span>!</div>
-  <button class="start-btn" onclick="initGame()">â–¶ Main!</button>
+  <div class="level-badge">⭐ Primary 1 — Jarak 1 & 2</div>
+  <div class="start-sub">Temukan tuts untuk not <span style="color:#9333ea">🟣 ungu</span>!</div>
+  <button class="start-btn" onclick="initGame()">▶ Main!</button>
 </div>
 
 <div class="score-screen" id="scoreScreen">
-  <div class="trophy" id="trophy">ðŸ†</div>
+  <div class="trophy" id="trophy">🏆</div>
   <div class="comment" id="comment"></div>
-  <div class="stat-box"><div class="num" id="finalScore">0</div><div class="lbl">ðŸŒŸ Skor</div></div>
+  <div class="stat-box"><div class="num" id="finalScore">0</div><div class="lbl">🌟 Skor</div></div>
   <br>
-  <button class="start-btn" onclick="initGame()">ðŸ”„ Main Lagi!</button>
+  <button class="start-btn" onclick="initGame()">🔄 Main Lagi!</button>
 </div>
 
 <div class="countdown-overlay" id="countdownOverlay">
@@ -110,24 +110,24 @@
 </div>
 <div class="feedback-pop" id="feedbackPop"></div>
 <div class="burst" id="burst">
-  <span style="--tx:-70px;--ty:-70px">â­</span><span style="--tx:70px;--ty:-70px">ðŸŒŸ</span>
-  <span style="--tx:80px;--ty:20px">âœ¨</span><span style="--tx:-80px;--ty:20px">ðŸ’«</span>
-  <span style="--tx:10px;--ty:-90px">â­</span><span style="--tx:-10px;--ty:80px">ðŸŒŸ</span>
+  <span style="--tx:-70px;--ty:-70px">⭐</span><span style="--tx:70px;--ty:-70px">🌟</span>
+  <span style="--tx:80px;--ty:20px">✨</span><span style="--tx:-80px;--ty:20px">💫</span>
+  <span style="--tx:10px;--ty:-90px">⭐</span><span style="--tx:-10px;--ty:80px">🌟</span>
 </div>
 
 <div class="game-wrap">
   <div class="header">
-    <div class="title">ðŸŽ¹ Piano Interval Primary 1</div>
-    <div class="subtitle">Interval 2nd &amp; 3rd Â· Jarak 1â€“2 tuts</div>
+    <div class="title">🎹 Piano Interval Primary 1</div>
+    <div class="subtitle">Interval 2nd &amp; 3rd · Jarak 1–2 tuts</div>
   </div>
   <div class="hud">
-    <div class="hud-pill timer">â±ï¸ <span id="timeCircle">30</span></div>
+    <div class="hud-pill timer">⏱️ <span id="timeCircle">30</span></div>
   </div>
   <div class="staff-card">
-    <div class="staff-label">ðŸŽ¼ Balok Not</div>
+    <div class="staff-label">🎼 Balok Not</div>
     <canvas id="staffCanvas" width="380" height="150"></canvas>
   </div>
-  <div class="question-label">ðŸ‘† Tekan tuts untuk not <span style="color:#9333ea;background:#f3e8ff;border-radius:6px;padding:1px 7px;">ðŸŸ£ ungu</span>!</div>
+  <div class="question-label">👆 Tekan tuts untuk not <span style="color:#9333ea;background:#f3e8ff;border-radius:6px;padding:1px 7px;">🟣 ungu</span>!</div>
   <div class="keyboard-wrap">
     <div class="piano" id="piano"></div>
   </div>
@@ -135,7 +135,7 @@
 
 <script>
 // ================================================================
-// LEVEL CONFIG â€” Primary 1: diatonic intervals 1 and 2 only
+// LEVEL CONFIG — Primary 1: diatonic intervals 1 and 2 only
 // Interval 1 = step up/down by 1 note (2nd)
 // Interval 2 = step up/down by 2 notes (3rd)
 // ================================================================
@@ -204,7 +204,7 @@ function drawStaff(){
   const xStart=140, xTarget=xStart+55;
   const y1=noteToY(startIdx), y2=noteToY(targetIdx);
 
-  // Note 1 â€” orange
+  // Note 1 — orange
   drawNote(xStart,y1,'#FF8C42');
   // Note name label
   const lblY=Math.max(y1+22,STAFF_TOP_Y+4*2*STEP+22);
@@ -214,7 +214,7 @@ function drawStaff(){
   // Arrow
   drawArrow(xStart,y1,xTarget,y2);
 
-  // Note 2 â€” purple, solid + dashed ring
+  // Note 2 — purple, solid + dashed ring
   ctx.save();ctx.globalAlpha=.82;drawNote(xTarget,y2,'#C084FC');ctx.restore();
   ctx.save();ctx.globalAlpha=.9;
   ctx.beginPath();ctx.ellipse(xTarget,y2,13,10,0,0,Math.PI*2);
@@ -255,7 +255,7 @@ buildPiano();
 window.addEventListener('resize',buildPiano);
 
 // ================================================================
-// GAME LOGIC â€” constrained intervals 1â€“2
+// GAME LOGIC — constrained intervals 1–2
 // ================================================================
 function newRound(){
   clearKeys();
@@ -278,8 +278,8 @@ function newRound(){
 function handleClick(i){
   if(!canClick||timeLeft<=0)return;
   canClick=false;total++;resumeAudio();
-  if(i===targetIdx){whiteKeys[i].classList.add('hit');correct++;playCorrect();showFeedback('â­',true);}
-  else{whiteKeys[i].classList.add('miss');whiteKeys[targetIdx].classList.add('hit');wrong++;playWrong();showFeedback('ðŸ’¨',false);}
+  if(i===targetIdx){whiteKeys[i].classList.add('hit');correct++;playCorrect();showFeedback('⭐',true);}
+  else{whiteKeys[i].classList.add('miss');whiteKeys[targetIdx].classList.add('hit');wrong++;playWrong();showFeedback('💨',false);}
   setTimeout(newRound,600);
 }
 
@@ -307,11 +307,11 @@ function endGame(){
   const speedFactor=Math.min(1,total/12);
   const finalScore=Math.round(Math.min(100,accuracy*speedFactor*100));
   let trophy,comment;
-  if(finalScore>=85){trophy='ðŸ†';comment='Luar biasa! Kamu sangat cepat dan tepat!';}
-  else if(finalScore>=70){trophy='ðŸ¥‡';comment='Hebat! Kamu sudah mulai sangat lancar!';}
-  else if(finalScore>=60){trophy='ðŸ¥ˆ';comment='Bagus! Tinggal sedikit lagi lebih cepat!';}
-  else if(finalScore>=50){trophy='ðŸ¥‰';comment='Lumayan! Ayo coba lebih cepat lagi!';}
-  else{trophy='ðŸŒˆ';comment='Ayo coba lagi! Kamu pasti bisa!';}
+  if(finalScore>=85){trophy='🏆';comment='Luar biasa! Kamu sangat cepat dan tepat!';}
+  else if(finalScore>=70){trophy='🥇';comment='Hebat! Kamu sudah mulai sangat lancar!';}
+  else if(finalScore>=60){trophy='🥈';comment='Bagus! Tinggal sedikit lagi lebih cepat!';}
+  else if(finalScore>=50){trophy='🥉';comment='Lumayan! Ayo coba lebih cepat lagi!';}
+  else{trophy='🌈';comment='Ayo coba lagi! Kamu pasti bisa!';}
   playEndFanfare(finalScore>=60);
   document.getElementById('trophy').textContent=trophy;
   document.getElementById('comment').textContent=comment;
@@ -340,4 +340,5 @@ drawStaff();
 </script>
 </body>
 </html>
+
 
