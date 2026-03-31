@@ -18,25 +18,25 @@
   body::before{content:'⭐🎵🎶🌟✨🎵⭐🎶';position:fixed;top:0;left:0;right:0;font-size:24px;letter-spacing:40px;opacity:.10;pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;animation:floatBg 18s linear infinite;}
   @keyframes floatBg{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-  .header{width:100%;text-align:center;padding:18px 16px 6px;}
+  .header{width:100%;text-align:center;padding:28px 16px 8px;}
   .title{font-family:'Lilita One',sans-serif;font-size:clamp(22px,6.5vw,34px);color:var(--text);text-shadow:3px 3px 0 rgba(255,255,255,.7);line-height:1.1;}
-  .subtitle{font-size:12px;font-weight:700;color:var(--orange);margin-top:2px;}
+  .subtitle{font-size:12px;font-weight:700;color:var(--orange);margin-top:4px;}
 
-  .hud{display:flex;justify-content:center;align-items:center;gap:12px;margin:8px 0 6px;width:100%;max-width:420px;padding:0 16px;}
+  .hud{display:flex;justify-content:center;align-items:center;gap:12px;margin:10px 0 8px;width:100%;max-width:420px;padding:0 16px;}
   .hud-pill{background:white;border-radius:50px;padding:8px 16px;font-family:'Lilita One',sans-serif;font-size:20px;box-shadow:0 4px 12px var(--shadow);display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
   .hud-pill.timer{color:var(--orange);}
   #timeCircle{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#FFD700,#FF8C42);color:white;font-family:'Lilita One',sans-serif;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(255,140,66,.4);transition:background .5s;flex-shrink:0;}
   #timeCircle.urgent{background:linear-gradient(135deg,#FF6B6B,#cc0011);animation:pulse .5s ease infinite alternate;}
   @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.12)}}
 
-  .staff-card{background:white;border-radius:var(--radius);box-shadow:0 8px 30px var(--shadow);width:calc(100% - 32px);max-width:420px;padding:14px 12px 16px;margin:0;position:relative;overflow:hidden;}
+  .staff-card{background:white;border-radius:var(--radius);box-shadow:0 8px 30px var(--shadow);width:calc(100% - 32px);max-width:420px;padding:14px 12px 18px;margin:0 0 8px;position:relative;overflow:hidden;}
   .staff-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#C084FC,#4ECDC4,#FFD700,#FF8C42,#FF6B6B);border-radius:var(--radius) var(--radius) 0 0;}
-  .staff-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#ccc;text-align:center;margin-bottom:8px;}
+  .staff-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#ccc;text-align:center;margin-bottom:10px;}
   #staffCanvas{width:100%;height:auto;display:block;border-radius:10px;background:#faf8ff;}
 
-  .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:12px 16px 6px;max-width:420px;width:100%;margin-top:auto;}
+  .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:10px 16px 4px;max-width:420px;width:100%;}
 
-  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:10px 0 18px;}
+  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:6px 0 18px;}
   .piano{position:relative;width:100%;height:clamp(108px,33vw,152px);padding:0 2px;}
 
   .white-key{position:absolute;bottom:0;height:100%;background:linear-gradient(180deg,#fff 55%,#f0ecfc 100%);border:2px solid #d8d0f0;border-top:3px solid #e8e0f8;border-radius:0 0 12px 12px;box-shadow:0 6px 0 #c8c0e0,inset 0 -2px 6px rgba(180,160,220,.12);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none;z-index:1;}
@@ -86,7 +86,7 @@
   .burst.active span{animation:burstOut .6s ease forwards;}
   @keyframes burstOut{0%{transform:translate(0,0) scale(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1);opacity:0}}
 
-  .game-wrap{width:100%;min-height:calc(100dvh - 8px);display:flex;flex-direction:column;align-items:center;}
+  .game-wrap{width:100%;min-height:100dvh;display:flex;flex-direction:column;align-items:center;}
 </style>
 </head>
 <body>
@@ -127,7 +127,7 @@
   </div>
   <div class="staff-card">
     <div class="staff-label">🎼 Balok Not</div>
-    <canvas id="staffCanvas" width="380" height="248"></canvas>
+    <canvas id="staffCanvas" width="380" height="278"></canvas>
   </div>
   <div class="question-label">👆 Tekan tuts untuk not <span style="color:#9333ea;background:#f3e8ff;border-radius:6px;padding:1px 7px;">🟣 ungu</span>!</div>
   <div class="keyboard-wrap">
@@ -171,10 +171,10 @@ function playUrgentTick(){playTone(800,'square',.08,.08);}
 // ================================================================
 const canvas = document.getElementById('staffCanvas');
 const ctx = canvas.getContext('2d');
-const STAFF_TOP_Y = 30, STEP = 17;
-const STAFF_LEFT_X = 56, STAFF_RIGHT_X = 324;
-const NOTE_RX = STEP * 0.98, NOTE_RY = STEP * 0.72;
-const STEM = STEP * 2.35;
+const STAFF_TOP_Y = 34, STEP = 19;
+const STAFF_LEFT_X = 58, STAFF_RIGHT_X = 322;
+const NOTE_RX = STEP * 1.02, NOTE_RY = STEP * 0.75;
+const STEM = STEP * 2.45;
 const C4_Y = STAFF_TOP_Y + 4*STEP + 2*STEP;
 let animationClock = 0;
 
@@ -207,9 +207,9 @@ function drawNoteHighlights(x,y,color){
   }
 
   const pulse=(Math.sin(animationClock/340)+1)/2;
-  const alpha=.22 + (.28*pulse);
-  const glow=6 + (8*pulse);
-  const thickness=4.2 + (1.6*pulse);
+  const alpha=.24 + (.3*pulse);
+  const glow=7 + (9*pulse);
+  const thickness=4.6 + (1.8*pulse);
   targets.forEach(lineY=>{
     ctx.save();
     ctx.strokeStyle=color;
@@ -219,8 +219,8 @@ function drawNoteHighlights(x,y,color){
     ctx.shadowColor=color;
     ctx.shadowBlur=glow;
     ctx.beginPath();
-    ctx.moveTo(x-50,lineY);
-    ctx.lineTo(x+50,lineY);
+    ctx.moveTo(x-54,lineY);
+    ctx.lineTo(x+54,lineY);
     ctx.stroke();
     ctx.restore();
   });
@@ -253,7 +253,7 @@ function drawStaff(){
   const lineYs=getStaffLineYs();
   const staffBottom=lineYs[lineYs.length-1];
   const staffCenter=(STAFF_LEFT_X+STAFF_RIGHT_X)/2;
-  const xStart=staffCenter-48, xTarget=staffCenter+48;
+  const xStart=staffCenter-54, xTarget=staffCenter+54;
   const y1=noteToY(startIdx), y2=noteToY(targetIdx);
 
   ctx.clearRect(0,0,W,H);ctx.fillStyle='#faf8ff';ctx.fillRect(0,0,W,H);
@@ -262,7 +262,7 @@ function drawStaff(){
     ctx.moveTo(STAFF_LEFT_X,y);
     ctx.lineTo(STAFF_RIGHT_X,y);
     ctx.strokeStyle='rgba(160,150,210,.72)';
-    ctx.lineWidth=2.2;
+    ctx.lineWidth=2.4;
     ctx.stroke();
   });
 
@@ -270,8 +270,8 @@ function drawStaff(){
   drawNoteHighlights(xTarget,y2,'#C084FC');
 
   drawNote(xStart,y1,'#FF8C42');
-  const lblY=Math.max(staffBottom+40,y1+34);
-  ctx.font='bold 16px Sniglet,Arial';ctx.fillStyle='#FF8C42';ctx.textAlign='center';
+  const lblY=Math.max(staffBottom+46,y1+38);
+  ctx.font='bold 17px Sniglet,Arial';ctx.fillStyle='#FF8C42';ctx.textAlign='center';
   ctx.fillText(notes[startIdx],xStart,lblY);
 
   drawArrow(xStart,y1,xTarget,y2);
@@ -281,8 +281,8 @@ function drawStaff(){
   ctx.beginPath();ctx.ellipse(xTarget,y2,NOTE_RX+4,NOTE_RY+4,0,0,Math.PI*2);
   ctx.strokeStyle='#9333ea';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
 
-  const qOffY=y2<STAFF_TOP_Y+STEP?y2+40:y2-42;
-  ctx.font='bold 22px Lilita One,Arial';ctx.fillStyle='#C084FC';ctx.textAlign='center';ctx.fillText('?',xTarget,qOffY);
+  const qOffY=y2<STAFF_TOP_Y+STEP?y2+46:y2-48;
+  ctx.font='bold 24px Lilita One,Arial';ctx.fillStyle='#C084FC';ctx.textAlign='center';ctx.fillText('?',xTarget,qOffY);
 }
 
 function startStaffAnimation(){
@@ -432,6 +432,7 @@ startStaffAnimation();
 </script>
 </body>
 </html>
+
 
 
 
