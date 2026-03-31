@@ -36,17 +36,25 @@
 
   .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:10px 16px 4px;max-width:420px;width:100%;}
 
-  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:6px 0 18px;}
-  .piano{position:relative;width:100%;height:clamp(108px,33vw,152px);padding:0 2px;}
+  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:8px 0 18px;overflow:hidden;position:relative;}
+  .keyboard-wrap::before,.keyboard-wrap::after{content:'';position:absolute;top:8px;bottom:18px;width:24px;pointer-events:none;z-index:4;}
+  .keyboard-wrap::before{left:0;background:linear-gradient(90deg,rgba(232,224,248,.92),rgba(232,224,248,0));}
+  .keyboard-wrap::after{right:0;background:linear-gradient(270deg,rgba(232,224,248,.92),rgba(232,224,248,0));}
+  .keyboard-viewport{position:relative;width:100%;overflow-x:auto;overflow-y:hidden;border-radius:14px;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x;}
+  .keyboard-viewport::-webkit-scrollbar{display:none;}
+  .piano{position:relative;height:clamp(108px,33vw,152px);padding:0 2px;min-width:max-content;}
+  .keyboard-hint{text-align:center;font-size:11px;font-weight:700;letter-spacing:.2px;color:rgba(122,90,170,.58);margin-top:8px;line-height:1.2;}
 
   .white-key{position:absolute;bottom:0;height:100%;background:linear-gradient(180deg,#fff 55%,#f0ecfc 100%);border:2px solid #d8d0f0;border-top:3px solid #e8e0f8;border-radius:0 0 12px 12px;box-shadow:0 6px 0 #c8c0e0,inset 0 -2px 6px rgba(180,160,220,.12);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none;z-index:1;}
   .white-key:active{transform:translateY(5px);box-shadow:0 1px 0 #c8c0e0;}
-  .white-key .avatar{width:clamp(18px,5.5vw,28px);height:clamp(18px,5.5vw,28px);opacity:.72;pointer-events:none;flex-shrink:0;}
+  .white-key .key-label{font-size:clamp(10px,2.5vw,12px);line-height:1.15;color:rgba(88,70,120,.36);font-weight:700;letter-spacing:.15px;text-align:center;pointer-events:none;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:2px;}
+  .white-key .key-label strong{font-size:clamp(11px,2.8vw,13px);font-weight:800;color:rgba(88,70,120,.42);}
+  .white-key .key-label span{font-size:clamp(10px,2.45vw,12px);font-weight:700;}
 
   .black-key{position:absolute;top:0;height:60%;background:linear-gradient(180deg,#4a3a6a,#2a1a4a);border:1.5px solid #1a0a2a;border-top:none;border-radius:0 0 7px 7px;box-shadow:0 5px 0 #150a25,2px 0 4px rgba(0,0,0,.28),-2px 0 4px rgba(0,0,0,.28);z-index:2;cursor:pointer;transition:transform .08s,box-shadow .08s;} .black-key:active{transform:translateY(4px);box-shadow:0 1px 0 #150a25;}
 
   .white-key.active{background:linear-gradient(180deg,#FFE566,#FF8C42)!important;border-color:#FF8C42!important;box-shadow:0 6px 0 #d06020,0 8px 16px rgba(255,140,66,.35)!important;}
-  .white-key.active .avatar{opacity:1;}
+  .white-key.active .key-label strong,.white-key.active .key-label span{color:rgba(255,255,255,.76);}
   .white-key.hit{background:linear-gradient(180deg,#e9d5ff,#C084FC)!important;border-color:#a855f7!important;box-shadow:0 6px 0 #7e22ce!important;animation:bounceKey .3s ease;}
   .white-key.miss{background:linear-gradient(180deg,#ffd0d0,#FF6B6B)!important;border-color:#FF6B6B!important;box-shadow:0 6px 0 #c03030!important;animation:shakeKey .3s ease;}
   .black-key.active{background:linear-gradient(180deg,#FFD700,#FF8C42)!important;box-shadow:0 5px 0 #d06020!important;}
@@ -132,7 +140,10 @@
   </div>
   <div class="question-label">👆 Tekan tuts untuk not <span style="color:#9333ea;background:#f3e8ff;border-radius:6px;padding:1px 7px;">🟣 ungu</span>!</div>
   <div class="keyboard-wrap">
-    <div class="piano" id="piano"></div>
+    <div class="keyboard-viewport" id="keyboardViewport">
+      <div class="piano" id="piano"></div>
+    </div>
+    <div class="keyboard-hint">Geser tuts ke kiri atau kanan bila perlu</div>
   </div>
 </div>
 
@@ -144,34 +155,54 @@
 const ACCIDENTAL_MODE = 'sharp';
 const MAX_INTERVAL = 4;
 
-const NATURALS = [
-  {name:'C', acc:'',  dStep:0, keyType:'white', keyIdx:0},
-  {name:'D', acc:'',  dStep:1, keyType:'white', keyIdx:1},
-  {name:'E', acc:'',  dStep:2, keyType:'white', keyIdx:2},
-  {name:'F', acc:'',  dStep:3, keyType:'white', keyIdx:3},
-  {name:'G', acc:'',  dStep:4, keyType:'white', keyIdx:4},
-  {name:'A', acc:'',  dStep:5, keyType:'white', keyIdx:5},
-  {name:'B', acc:'',  dStep:6, keyType:'white', keyIdx:6}
-];
+const WHITE_KEY_INDEX = {C:0,D:1,E:2,F:3,G:4,A:5,B:6};
+const BLACK_KEY_INDEX = {
+  sharp:{C:0,D:1,F:2,G:3,A:4},
+  flat:{D:0,E:1,G:2,A:3,B:4}
+};
+const CLEF_NATURALS = {
+  treble:['G','A','B','C','D','E','F'],
+  bass:['B','C','D','E','F','G','A']
+};
 
-const SHARP_SET = [
-  {name:'C', acc:'#', dStep:0, keyType:'black', keyIdx:0},
-  {name:'D', acc:'#', dStep:1, keyType:'black', keyIdx:1},
-  {name:'F', acc:'#', dStep:3, keyType:'black', keyIdx:2},
-  {name:'G', acc:'#', dStep:4, keyType:'black', keyIdx:3},
-  {name:'A', acc:'#', dStep:5, keyType:'black', keyIdx:4}
-];
+let currentClef = 'treble';
+let NATURALS = [];
+let ACCIDENTAL_NOTES = [];
+let ALL_NOTES = [];
 
-const FLAT_SET = [
-  {name:'D', acc:'b', dStep:1, keyType:'black', keyIdx:0},
-  {name:'E', acc:'b', dStep:2, keyType:'black', keyIdx:1},
-  {name:'G', acc:'b', dStep:4, keyType:'black', keyIdx:2},
-  {name:'A', acc:'b', dStep:5, keyType:'black', keyIdx:3},
-  {name:'B', acc:'b', dStep:6, keyType:'black', keyIdx:4}
-];
+function buildNaturalsForClef(clef){
+  return CLEF_NATURALS[clef].map((name,dStep)=>({
+    name,
+    acc:'',
+    dStep,
+    keyType:'white',
+    keyIdx:WHITE_KEY_INDEX[name]
+  }));
+}
 
-const ACCIDENTAL_NOTES = ACCIDENTAL_MODE === 'sharp' ? SHARP_SET : FLAT_SET;
-const ALL_NOTES = [...NATURALS, ...ACCIDENTAL_NOTES];
+function buildAccidentalsForClef(naturals){
+  const keyLookup = BLACK_KEY_INDEX[ACCIDENTAL_MODE];
+  return naturals
+    .filter(note=>keyLookup[note.name] !== undefined)
+    .map(note=>(
+      {
+        name:note.name,
+        acc:ACCIDENTAL_MODE === 'sharp' ? '#' : 'b',
+        dStep:note.dStep,
+        keyType:'black',
+        keyIdx:keyLookup[note.name]
+      }
+    ));
+}
+
+function setClefNotePool(clef){
+  currentClef = clef;
+  NATURALS = buildNaturalsForClef(clef);
+  ACCIDENTAL_NOTES = buildAccidentalsForClef(NATURALS);
+  ALL_NOTES = [...NATURALS, ...ACCIDENTAL_NOTES];
+}
+
+setClefNotePool(currentClef);
 
 let startNote = NATURALS[0], targetNote = NATURALS[0], canClick = false;
 let correct = 0, wrong = 0, total = 0;
@@ -221,14 +252,18 @@ function drawLedgerLine(x,y){
 
 function drawAccidental(x,y,acc,color){
   if(!acc) return;
+  const isSharp = acc === '#';
+  const accidentalFontSize = isSharp ? STEP * 2.15 : STEP * 2.4;
+  const accidentalX = isSharp ? x - NOTE_RX - 17 : x - NOTE_RX - 13;
+  const accidentalY = isSharp ? y : y - STEP * 0.08;
   ctx.save();
   ctx.fillStyle=color;
-  ctx.font="bold 30px 'Segoe UI Symbol','Arial Unicode MS',serif";
+  ctx.font=`bold ${accidentalFontSize}px 'Segoe UI Symbol','Arial Unicode MS',serif`;
   ctx.textAlign='center';
   ctx.textBaseline='middle';
   ctx.shadowColor='rgba(255,255,255,.7)';
   ctx.shadowBlur=4;
-  ctx.fillText(acc === '#' ? '♯' : '♭', x-28, y-1);
+  ctx.fillText(isSharp ? '♯' : '♭', accidentalX, accidentalY);
   ctx.restore();
 }
 
@@ -368,39 +403,138 @@ function startStaffAnimation(){
 // ================================================================
 // PIANO
 // ================================================================
-const BOY_SVG=<svg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'><circle cx='20' cy='11' r='8' fill='#FBBF8A'/><ellipse cx='20' cy='32' rx='10' ry='8' fill='#60A5FA'/><circle cx='17' cy='10' r='1.5' fill='#3B2A6E'/><circle cx='23' cy='10' r='1.5' fill='#3B2A6E'/><path d='M17 14 Q20 17 23 14' stroke='#c07050' stroke-width='1.2' fill='none' stroke-linecap='round'/><path d='M13 7 Q20 1 27 7' stroke='#a06030' stroke-width='2' fill='none'/></svg>;
-const GIRL_SVG=<svg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'><circle cx='20' cy='11' r='8' fill='#FBBF8A'/><ellipse cx='20' cy='32' rx='10' ry='8' fill='#F472B6'/><circle cx='17' cy='10' r='1.5' fill='#3B2A6E'/><circle cx='23' cy='10' r='1.5' fill='#3B2A6E'/><path d='M17 14 Q20 17 23 14' stroke='#c07050' stroke-width='1.2' fill='none' stroke-linecap='round'/><path d='M12 6 Q14 2 20 3 Q26 2 28 6 Q26 4 20 5 Q14 4 12 6Z' fill='#c05080'/><circle cx='12' cy='11' r='3' fill='#f9a8d4' opacity='0.7'/><circle cx='28' cy='11' r='3' fill='#f9a8d4' opacity='0.7'/></svg>;
-
+const keyboardViewport=document.getElementById('keyboardViewport');
 const piano=document.getElementById('piano');
 const whiteKeys=[], blackKeys=[];
-const blackSlots=[[0,1],[1,2],[3,4],[4,5],[5,6]];
+const whiteKeyMap=new Map(), blackKeyMap=new Map();
+const BLACK_LAYOUT=[
+  {between:1,pitch:1,name:'C'},
+  {between:2,pitch:3,name:'D'},
+  {between:4,pitch:6,name:'F'},
+  {between:5,pitch:8,name:'G'},
+  {between:6,pitch:10,name:'A'}
+];
+const WHITE_SEQUENCE=['C','D','E','F','G','A','B'];
+const SOLFEGE_LABEL={C:'do',D:'re',E:'mi',F:'fa',G:'sol',A:'la',B:'si'};
+const WHITE_PITCHES=[0,2,4,5,7,9,11];
+const PITCH_CLASS={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const ACCIDENTAL_SHIFT={'':0,'#':1,'b':-1};
+const OCTAVE_COUNT=3;
+const BASE_OCTAVE_INDEX=1;
+let viewportOffset=BASE_OCTAVE_INDEX;
+let startDisplayPos=12;
+let targetDisplayPos=12;
+
+function getPitchClass(note){
+  return (PITCH_CLASS[note.name] + ACCIDENTAL_SHIFT[note.acc] + 12) % 12;
+}
+
+function computeDisplayPosition(note, referencePos=null, direction=0){
+  let displayPos=BASE_OCTAVE_INDEX*12 + getPitchClass(note);
+  if(direction>0){
+    while(displayPos<=referencePos) displayPos+=12;
+  }else if(direction<0){
+    while(displayPos>=referencePos) displayPos-=12;
+  }
+  return displayPos;
+}
+
+function getScrollOffsetForDisplay(displayPos){
+  if(displayPos < BASE_OCTAVE_INDEX*12) return BASE_OCTAVE_INDEX - 1;
+  if(displayPos >= (BASE_OCTAVE_INDEX + 1)*12) return BASE_OCTAVE_INDEX + 1;
+  return BASE_OCTAVE_INDEX;
+}
+
+function setKeyboardViewport(offset, animated=true){
+  viewportOffset=offset;
+  const viewportWidth=keyboardViewport.clientWidth || 380;
+  keyboardViewport.style.scrollBehavior=animated ? 'smooth' : 'auto';
+  keyboardViewport.scrollLeft=viewportWidth*offset;
+  if(animated){
+    clearTimeout(setKeyboardViewport.resetTimer);
+    setKeyboardViewport.resetTimer=setTimeout(()=>{keyboardViewport.style.scrollBehavior='auto';},460);
+  }
+}
+
+function resetKeyboardViewport(animated=true){
+  setKeyboardViewport(BASE_OCTAVE_INDEX, animated);
+}
 
 function buildPiano(){
-  piano.innerHTML='';whiteKeys.length=0;blackKeys.length=0;
-  const W=piano.offsetWidth||380, ww=(W-8)/7;
-  NATURALS.forEach((n,i)=>{
-    const key=document.createElement('div');key.classList.add('white-key');
-    key.style.left=(4+i*ww)+'px';key.style.width=(ww-3)+'px';
-    const av=document.createElement('div');av.classList.add('avatar');av.innerHTML=i%2===0?BOY_SVG:GIRL_SVG;key.appendChild(av);
-    key.addEventListener('pointerdown',(e)=>{e.preventDefault();handleClick('white',i);});
-    piano.appendChild(key);whiteKeys.push(key);
-  });
-  blackSlots.forEach(([l,r],slot)=>{
-    const key=document.createElement('div');key.classList.add('black-key');
-    const bw=ww*.58,x=4+r*ww-bw/2;key.style.left=x+'px';key.style.width=bw+'px';
-    key.addEventListener('pointerdown',(e)=>{e.preventDefault();handleClick('black',slot);});
-    piano.appendChild(key);blackKeys.push(key);
-  });
+  piano.innerHTML='';
+  whiteKeys.length=0;blackKeys.length=0;
+  whiteKeyMap.clear();blackKeyMap.clear();
+  const viewportWidth=keyboardViewport.clientWidth || 380;
+  const ww=(viewportWidth-8)/7;
+  const totalWhiteKeys=WHITE_SEQUENCE.length * OCTAVE_COUNT;
+  piano.style.width=(totalWhiteKeys*ww + 8)+'px';
+
+  for(let octave=0; octave<OCTAVE_COUNT; octave++){
+    WHITE_SEQUENCE.forEach((name,whiteIdx)=>{
+      const key=document.createElement('div');
+      const absoluteWhiteIdx=octave*WHITE_SEQUENCE.length + whiteIdx;
+      const displayPos=octave*12 + WHITE_PITCHES[whiteIdx];
+      key.classList.add('white-key');
+      key.style.left=(4 + absoluteWhiteIdx*ww)+'px';
+      key.style.width=(ww-3)+'px';
+      key.dataset.noteName=name;
+      key.dataset.acc='';
+      key.dataset.displayPos=String(displayPos);
+      const label=document.createElement('div');
+      label.classList.add('key-label');
+      label.innerHTML=`<strong>${name}</strong><span>${SOLFEGE_LABEL[name]}</span>`;
+      key.appendChild(label);
+      key.addEventListener('pointerdown',(e)=>{e.preventDefault();handleClick({
+        el:key,
+        noteName:name,
+        acc:'',
+        displayPos
+      });});
+      piano.appendChild(key);
+      whiteKeys.push(key);
+      whiteKeyMap.set(displayPos,key);
+    });
+
+    BLACK_LAYOUT.forEach(layout=>{
+      const key=document.createElement('div');
+      const bw=ww*.58;
+      const x=4 + (octave*WHITE_SEQUENCE.length + layout.between)*ww - bw/2;
+      const displayPos=octave*12 + layout.pitch;
+      key.classList.add('black-key');
+      key.style.left=x+'px';
+      key.style.width=bw+'px';
+      key.dataset.noteName=layout.name;
+      key.dataset.acc=ACCIDENTAL_MODE === 'sharp' ? '#' : 'b';
+      key.dataset.displayPos=String(displayPos);
+      key.addEventListener('pointerdown',(e)=>{e.preventDefault();handleClick({
+        el:key,
+        noteName:layout.name,
+        acc:ACCIDENTAL_MODE === 'sharp' ? '#' : 'b',
+        displayPos
+      });});
+      piano.appendChild(key);
+      blackKeys.push(key);
+      blackKeyMap.set(displayPos,key);
+    });
+  }
+
+  setKeyboardViewport(viewportOffset, false);
 }
 buildPiano();
-window.addEventListener('resize',()=>{buildPiano();drawStaff();});
+window.addEventListener('resize',()=>{
+  buildPiano();
+  clearKeys();
+  markActive(startNote,startDisplayPos);
+  drawStaff();
+});
 
-function getKeyEl(note){
-  return note.keyType==='white' ? whiteKeys[note.keyIdx] : blackKeys[note.keyIdx];
+function getKeyEl(note, displayPos){
+  return note.keyType==='white' ? whiteKeyMap.get(displayPos) : blackKeyMap.get(displayPos);
 }
 
-function markActive(note){
-  const el=getKeyEl(note); if(el) el.classList.add('active');
+function markActive(note, displayPos){
+  const el=getKeyEl(note, displayPos);
+  if(el) el.classList.add('active');
 }
 
 // ================================================================
@@ -408,6 +542,8 @@ function markActive(note){
 // ================================================================
 function newRound(){
   clearKeys();
+  resetKeyboardViewport(false);
+  setClefNotePool(Math.random() < 0.5 ? 'treble' : 'bass');
   startNote=NATURALS[Math.floor(Math.random()*NATURALS.length)];
 
   const candidates=[];
@@ -421,18 +557,20 @@ function newRound(){
   const filtered=candidates.filter(note=>!(note.name===startNote.name && note.acc===startNote.acc));
   targetNote=filtered[Math.floor(Math.random()*filtered.length)];
 
-  markActive(startNote);
+  startDisplayPos=computeDisplayPosition(startNote);
+  targetDisplayPos=computeDisplayPosition(targetNote,startDisplayPos,Math.sign(targetNote.dStep-startNote.dStep));
+
+  markActive(startNote,startDisplayPos);
   drawStaff();
   canClick=true;
 }
 
-function handleClick(type,idx){
+function handleClick(clicked){
   if(!canClick||timeLeft<=0)return;
   canClick=false;total++;resumeAudio();
-  const clicked = ALL_NOTES.find(note=>note.keyType===type && note.keyIdx===idx);
-  const clickedEl = type==='white' ? whiteKeys[idx] : blackKeys[idx];
-  const targetEl = getKeyEl(targetNote);
-  const isCorrect = clicked && clicked.name===targetNote.name && clicked.acc===targetNote.acc;
+  const clickedEl = clicked ? clicked.el : null;
+  const targetEl = getKeyEl(targetNote,targetDisplayPos);
+  const isCorrect = clicked && clicked.noteName===targetNote.name && clicked.acc===targetNote.acc && clicked.displayPos===targetDisplayPos;
 
   if(isCorrect){
     if(clickedEl) clickedEl.classList.add('hit');
@@ -442,10 +580,14 @@ function handleClick(type,idx){
     if(targetEl) targetEl.classList.add('hit');
     wrong++; playWrong(); showFeedback('💨',false);
   }
+  resetKeyboardViewport(true);
   setTimeout(newRound,650);
 }
 
-function clearKeys(){whiteKeys.forEach(k=>k.classList.remove('active','hit','miss'));blackKeys.forEach(k=>k.classList.remove('active','hit','miss'));}
+function clearKeys(){
+  whiteKeys.forEach(k=>k.classList.remove('active','hit','miss'));
+  blackKeys.forEach(k=>k.classList.remove('active','hit','miss'));
+}
 
 function showFeedback(emoji,good){
   const pop=document.getElementById('feedbackPop');
@@ -502,6 +644,15 @@ startStaffAnimation();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 
