@@ -29,21 +29,23 @@
   #timeCircle.urgent{background:linear-gradient(135deg,#FF6B6B,#cc0011);animation:pulse .5s ease infinite alternate;}
   @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.12)}}
 
-  .staff-card{background:white;border-radius:var(--radius);box-shadow:0 8px 30px var(--shadow);width:calc(100% - 32px);max-width:420px;padding:14px 14px 10px;margin:0 0 6px;position:relative;overflow:hidden;}
+  .staff-card{background:white;border-radius:var(--radius);box-shadow:0 8px 30px var(--shadow);width:calc(100% - 32px);max-width:420px;padding:14px 14px 12px;margin:0 0 8px;position:relative;overflow:hidden;}
   .staff-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#C084FC,#4ECDC4,#FFD700,#FF8C42,#FF6B6B);border-radius:var(--radius) var(--radius) 0 0;}
   .staff-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#ccc;text-align:center;margin-bottom:6px;}
   #staffCanvas{width:100%;height:auto;display:block;border-radius:10px;background:#faf8ff;}
 
-  .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:6px 16px 2px;max-width:420px;width:100%;}
+  .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:8px 16px 4px;max-width:420px;width:100%;}
 
-  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:6px 0 0;}
-  .piano{position:relative;width:100%;height:clamp(100px,30vw,140px);padding:0 2px;}
+  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:8px 0 0;}
+  .piano{position:relative;width:100%;height:clamp(108px,33vw,152px);padding:0 2px;}
 
   .white-key{position:absolute;bottom:0;height:100%;background:linear-gradient(180deg,#fff 55%,#f0ecfc 100%);border:2px solid #d8d0f0;border-top:3px solid #e8e0f8;border-radius:0 0 12px 12px;box-shadow:0 6px 0 #c8c0e0,inset 0 -2px 6px rgba(180,160,220,.12);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none;z-index:1;}
   .white-key:active{transform:translateY(5px);box-shadow:0 1px 0 #c8c0e0;}
   .white-key .avatar{width:clamp(18px,5.5vw,28px);height:clamp(18px,5.5vw,28px);opacity:.72;pointer-events:none;flex-shrink:0;}
 
-  .black-key{position:absolute;top:0;height:60%;background:linear-gradient(180deg,#4a3a6a,#2a1a4a);border:1.5px solid #1a0a2a;border-top:none;border-radius:0 0 7px 7px;box-shadow:0 5px 0 #150a25,2px 0 4px rgba(0,0,0,.28),-2px 0 4px rgba(0,0,0,.28);z-index:2;pointer-events:none;}
+  .black-key{position:absolute;top:0;height:60%;background:linear-gradient(180deg,#4a3a6a,#2a1a4a);border:1.5px solid #1a0a2a;border-top:none;border-radius:0 0 7px 7px;box-shadow:0 5px 0 #150a25,2px 0 4px rgba(0,0,0,.28),-2px 0 4px rgba(0,0,0,.28);z-index:2;pointer-events:none;opacity:1;transform:translateY(0);transition:opacity 2s ease,transform 2s ease;}
+  .black-key.fade-out{opacity:0;transform:translateY(-8px);}
+  .black-key.hidden{display:none;}
 
   .white-key.active{background:linear-gradient(180deg,#FFE566,#FF8C42)!important;border-color:#FF8C42!important;box-shadow:0 6px 0 #d06020,0 8px 16px rgba(255,140,66,.35)!important;}
   .white-key.active .avatar{opacity:1;}
@@ -125,7 +127,7 @@
   </div>
   <div class="staff-card">
     <div class="staff-label">🎼 Balok Not</div>
-    <canvas id="staffCanvas" width="380" height="150"></canvas>
+    <canvas id="staffCanvas" width="380" height="190"></canvas>
   </div>
   <div class="question-label">👆 Tekan tuts untuk not <span style="color:#9333ea;background:#f3e8ff;border-radius:6px;padding:1px 7px;">🟣 ungu</span>!</div>
   <div class="keyboard-wrap">
@@ -169,60 +171,127 @@ function playUrgentTick(){playTone(800,'square',.08,.08);}
 // ================================================================
 const canvas = document.getElementById('staffCanvas');
 const ctx = canvas.getContext('2d');
-const STAFF_TOP_Y = 28, STEP = 10;
-const C4_Y = STAFF_TOP_Y + 4*STEP + 2*STEP; // = 108
+const STAFF_TOP_Y = 24, STEP = 14;
+const STAFF_LEFT_X = 42, STAFF_RIGHT_X = 338;
+const NOTE_RX = STEP * 0.92, NOTE_RY = STEP * 0.68;
+const STEM = STEP * 2.25;
+const C4_Y = STAFF_TOP_Y + 4*STEP + 2*STEP;
+let animationClock = 0;
 
 function noteToY(index){ return C4_Y - index*STEP; }
+function getStaffLineYs(){ return Array.from({length:5},(_,i)=>STAFF_TOP_Y+i*2*STEP); }
+
+function drawLedgerLine(x,y){
+  ctx.beginPath();
+  ctx.moveTo(x-NOTE_RX-8,y);
+  ctx.lineTo(x+NOTE_RX+8,y);
+  ctx.strokeStyle='rgba(160,150,200,.82)';
+  ctx.lineWidth=2.2;
+  ctx.stroke();
+}
+
+function drawNoteHighlights(x,y,color){
+  const lineYs=getStaffLineYs();
+  const targets=[];
+  const exactLine=lineYs.find(lineY=>Math.abs(lineY-y)<0.5);
+  if(exactLine!==undefined){
+    targets.push(exactLine);
+  }else{
+    let lower=null,upper=null;
+    lineYs.forEach(lineY=>{
+      if(lineY<y) lower=lineY;
+      if(lineY>y && upper===null) upper=lineY;
+    });
+    if(lower!==null) targets.push(lower);
+    if(upper!==null) targets.push(upper);
+  }
+
+  const pulse=(Math.sin(animationClock/340)+1)/2;
+  const alpha=.22 + (.28*pulse);
+  const glow=6 + (8*pulse);
+  const thickness=4.2 + (1.6*pulse);
+  targets.forEach(lineY=>{
+    ctx.save();
+    ctx.strokeStyle=color;
+    ctx.globalAlpha=alpha;
+    ctx.lineWidth=thickness;
+    ctx.lineCap='round';
+    ctx.shadowColor=color;
+    ctx.shadowBlur=glow;
+    ctx.beginPath();
+    ctx.moveTo(x-44,lineY);
+    ctx.lineTo(x+44,lineY);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
 
 function drawNote(x,y,color){
   const staffBot=STAFF_TOP_Y+4*2*STEP, staffTop=STAFF_TOP_Y;
-  if(y>staffBot+STEP-1){for(let ly=staffBot+2*STEP;ly<=y+1;ly+=2*STEP){ctx.beginPath();ctx.moveTo(x-14,ly);ctx.lineTo(x+14,ly);ctx.strokeStyle='rgba(160,150,200,.8)';ctx.lineWidth=1.8;ctx.stroke();}}
-  if(y<staffTop-STEP+1){for(let ly=staffTop-2*STEP;ly>=y-1;ly-=2*STEP){ctx.beginPath();ctx.moveTo(x-14,ly);ctx.lineTo(x+14,ly);ctx.strokeStyle='rgba(160,150,200,.8)';ctx.lineWidth=1.8;ctx.stroke();}}
-  ctx.save();ctx.shadowColor='rgba(100,80,160,.2)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;
-  ctx.beginPath();ctx.ellipse(x,y,10,7,0,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.restore();
-  ctx.beginPath();ctx.moveTo(x+9,y);ctx.lineTo(x+9,y-28);ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+  if(y>staffBot+STEP-1){for(let ly=staffBot+2*STEP;ly<=y+1;ly+=2*STEP){drawLedgerLine(x,ly);}}
+  if(y<staffTop-STEP+1){for(let ly=staffTop-2*STEP;ly>=y-1;ly-=2*STEP){drawLedgerLine(x,ly);}}
+  ctx.save();ctx.shadowColor='rgba(100,80,160,.24)';ctx.shadowBlur=8;ctx.shadowOffsetY=2;
+  ctx.beginPath();ctx.ellipse(x,y,NOTE_RX,NOTE_RY,0,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.moveTo(x+NOTE_RX-1,y);ctx.lineTo(x+NOTE_RX-1,y-STEM);ctx.strokeStyle=color;ctx.lineWidth=2.4;ctx.stroke();
 }
 
 function drawArrow(x1,y1,x2,y2){
   const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
   if(len<1)return;
-  const off=14,nx=x2-dx/len*off,ny=y2-dy/len*off;
+  const off=NOTE_RX+8,nx=x2-dx/len*off,ny=y2-dy/len*off;
   const grad=ctx.createLinearGradient(x1,y1,nx,ny);
   grad.addColorStop(0,'#C084FC');grad.addColorStop(1,'#FFD700');
   ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(nx,ny);
-  ctx.strokeStyle=grad;ctx.lineWidth=2.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=grad;ctx.lineWidth=2.8;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
   const ang=Math.atan2(ny-y1,nx-x1);
   ctx.save();ctx.translate(nx,ny);ctx.rotate(ang);
-  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-11,-6);ctx.lineTo(-11,6);ctx.closePath();ctx.fillStyle='#FFD700';ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-12,-7);ctx.lineTo(-12,7);ctx.closePath();ctx.fillStyle='#FFD700';ctx.fill();ctx.restore();
 }
 
 function drawStaff(){
   const W=canvas.width,H=canvas.height;
-  ctx.clearRect(0,0,W,H);ctx.fillStyle='#faf8ff';ctx.fillRect(0,0,W,H);
-  for(let i=0;i<5;i++){const y=STAFF_TOP_Y+i*2*STEP;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(W-16,y);ctx.strokeStyle='rgba(160,150,210,.65)';ctx.lineWidth=1.6;ctx.stroke();}
-
-  const xStart=140, xTarget=xStart+55;
+  const lineYs=getStaffLineYs();
+  const staffBottom=lineYs[lineYs.length-1];
+  const staffCenter=(STAFF_LEFT_X+STAFF_RIGHT_X)/2;
+  const xStart=staffCenter-42, xTarget=staffCenter+42;
   const y1=noteToY(startIdx), y2=noteToY(targetIdx);
 
-  // Note 1 — orange
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#faf8ff';ctx.fillRect(0,0,W,H);
+  lineYs.forEach(y=>{
+    ctx.beginPath();
+    ctx.moveTo(STAFF_LEFT_X,y);
+    ctx.lineTo(STAFF_RIGHT_X,y);
+    ctx.strokeStyle='rgba(160,150,210,.72)';
+    ctx.lineWidth=1.9;
+    ctx.stroke();
+  });
+
+  drawNoteHighlights(xStart,y1,'#FFB067');
+  drawNoteHighlights(xTarget,y2,'#C084FC');
+
   drawNote(xStart,y1,'#FF8C42');
-  // Note name label
-  const lblY=Math.max(y1+22,STAFF_TOP_Y+4*2*STEP+22);
-  ctx.font='bold 13px Sniglet,Arial';ctx.fillStyle='#FF8C42';ctx.textAlign='center';
+  const lblY=Math.max(staffBottom+34,y1+30);
+  ctx.font='bold 15px Sniglet,Arial';ctx.fillStyle='#FF8C42';ctx.textAlign='center';
   ctx.fillText(notes[startIdx],xStart,lblY);
 
-  // Arrow
   drawArrow(xStart,y1,xTarget,y2);
 
-  // Note 2 — purple, solid + dashed ring
-  ctx.save();ctx.globalAlpha=.82;drawNote(xTarget,y2,'#C084FC');ctx.restore();
-  ctx.save();ctx.globalAlpha=.9;
-  ctx.beginPath();ctx.ellipse(xTarget,y2,13,10,0,0,Math.PI*2);
-  ctx.strokeStyle='#9333ea';ctx.lineWidth=1.8;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  ctx.save();ctx.globalAlpha=.86;drawNote(xTarget,y2,'#C084FC');ctx.restore();
+  ctx.save();ctx.globalAlpha=.92;
+  ctx.beginPath();ctx.ellipse(xTarget,y2,NOTE_RX+4,NOTE_RY+4,0,0,Math.PI*2);
+  ctx.strokeStyle='#9333ea';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
 
-  // "?" marker
-  const qOffY=y2<STAFF_TOP_Y+STEP?y2+30:y2-32;
-  ctx.font='bold 18px Lilita One,Arial';ctx.fillStyle='#C084FC';ctx.textAlign='center';ctx.fillText('?',xTarget,qOffY);
+  const qOffY=y2<STAFF_TOP_Y+STEP?y2+34:y2-36;
+  ctx.font='bold 20px Lilita One,Arial';ctx.fillStyle='#C084FC';ctx.textAlign='center';ctx.fillText('?',xTarget,qOffY);
+}
+
+function startStaffAnimation(){
+  function frame(t){
+    animationClock=t;
+    drawStaff();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
 // ================================================================
@@ -234,6 +303,28 @@ const GIRL_SVG=`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><cir
 const piano=document.getElementById('piano');
 const whiteKeys=[], blackKeys=[];
 const blackSlots=[[0,1],[1,2],[3,4],[4,5],[5,6]];
+let blackKeysHidden = false;
+let blackKeysFadeTimer = null;
+
+function syncBlackKeyState(){
+  blackKeys.forEach(key=>{
+    key.classList.remove('fade-out','hidden');
+    if(blackKeysHidden) key.classList.add('hidden');
+  });
+}
+
+function showIntroBlackKeys(){
+  clearTimeout(blackKeysFadeTimer);
+  blackKeysHidden = false;
+  syncBlackKeyState();
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>blackKeys.forEach(key=>key.classList.add('fade-out')));
+  });
+  blackKeysFadeTimer = setTimeout(()=>{
+    blackKeysHidden = true;
+    blackKeys.forEach(key=>key.classList.add('hidden'));
+  },2000);
+}
 
 function buildPiano(){
   piano.innerHTML='';whiteKeys.length=0;blackKeys.length=0;
@@ -250,9 +341,10 @@ function buildPiano(){
     const bw=ww*.58,x=4+r*ww-bw/2;key.style.left=x+'px';key.style.width=bw+'px';
     piano.appendChild(key);blackKeys.push(key);
   });
+  syncBlackKeyState();
 }
 buildPiano();
-window.addEventListener('resize',buildPiano);
+window.addEventListener('resize',()=>{buildPiano();drawStaff();});
 
 // ================================================================
 // GAME LOGIC — constrained intervals 1–2
@@ -320,10 +412,10 @@ function endGame(){
 }
 
 function initGame(){
-  resumeAudio();correct=0;wrong=0;total=0;clearInterval(timerInterval);
+  resumeAudio();correct=0;wrong=0;total=0;clearInterval(timerInterval);clearTimeout(blackKeysFadeTimer);
   document.getElementById('startScreen').classList.add('hidden');
   document.getElementById('scoreScreen').classList.remove('show');
-  buildPiano();document.getElementById('timeCircle').textContent='30';
+  buildPiano();blackKeysHidden=false;syncBlackKeyState();document.getElementById('timeCircle').textContent='30';
   document.getElementById('timeCircle').classList.remove('urgent');clearKeys();
   const overlay=document.getElementById('countdownOverlay'),numEl=document.getElementById('countdownNum');
   const seq=['3','2','1','GO!'];let step=0;
@@ -332,13 +424,16 @@ function initGame(){
     numEl.textContent=seq[step];numEl.style.animation='none';void numEl.offsetWidth;numEl.style.animation='countPop .8s ease forwards';
     playCountdownBeep(step===3?0:3-step);
     if(step<seq.length-1){step++;setTimeout(doStep,900);}
-    else{setTimeout(()=>{overlay.classList.remove('show');startTimer();newRound();},700);}
+    else{setTimeout(()=>{overlay.classList.remove('show');startTimer();newRound();showIntroBlackKeys();},700);}
   }
   setTimeout(doStep,300);
 }
-drawStaff();
+startStaffAnimation();
 </script>
 </body>
 </html>
+
+
+
 
 
