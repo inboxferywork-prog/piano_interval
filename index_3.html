@@ -36,26 +36,12 @@
 
   .question-label{text-align:center;font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--purple);padding:10px 16px 4px;max-width:420px;width:100%;}
 
-  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:8px 0 18px;overflow:hidden;position:relative;}
-  .keyboard-wrap::before,.keyboard-wrap::after{content:'';position:absolute;top:8px;bottom:18px;width:24px;pointer-events:none;z-index:4;}
-  .keyboard-wrap::before{left:0;background:linear-gradient(90deg,rgba(232,224,248,.92),rgba(232,224,248,0));}
-  .keyboard-wrap::after{right:0;background:linear-gradient(270deg,rgba(232,224,248,.92),rgba(232,224,248,0));}
-  .keyboard-viewport{position:relative;width:100%;overflow-x:auto;overflow-y:hidden;border-radius:14px;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x;}
-  .keyboard-viewport::-webkit-scrollbar{display:none;}
-  .piano{position:relative;height:clamp(108px,33vw,152px);padding:0 2px;min-width:max-content;}
-  .keyboard-hint{text-align:center;font-size:11px;font-weight:700;letter-spacing:.2px;color:rgba(122,90,170,.58);margin-top:8px;line-height:1.2;}
-
+  .keyboard-wrap{width:calc(100% - 32px);max-width:420px;padding:6px 0 18px;overflow:hidden;}  .keyboard-viewport{position:relative;width:100%;overflow:hidden;border-radius:14px;}  .piano{position:relative;height:clamp(108px,33vw,152px);padding:0 2px;min-width:max-content;will-change:transform;transition:transform .46s cubic-bezier(.22,.8,.22,1);}
   .white-key{position:absolute;bottom:0;height:100%;background:linear-gradient(180deg,#fff 55%,#f0ecfc 100%);border:2px solid #d8d0f0;border-top:3px solid #e8e0f8;border-radius:0 0 12px 12px;box-shadow:0 6px 0 #c8c0e0,inset 0 -2px 6px rgba(180,160,220,.12);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px;transition:transform .08s,box-shadow .08s;-webkit-user-select:none;user-select:none;z-index:1;}
   .white-key:active{transform:translateY(5px);box-shadow:0 1px 0 #c8c0e0;}
-  .white-key .key-label{font-size:clamp(10px,2.5vw,12px);line-height:1.15;color:rgba(88,70,120,.36);font-weight:700;letter-spacing:.15px;text-align:center;pointer-events:none;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:2px;}
-  .white-key .key-label strong{font-size:clamp(11px,2.8vw,13px);font-weight:800;color:rgba(88,70,120,.42);}
-  .white-key .key-label span{font-size:clamp(10px,2.45vw,12px);font-weight:700;}
-
   .black-key{position:absolute;top:0;height:60%;background:linear-gradient(180deg,#4a3a6a,#2a1a4a);border:1.5px solid #1a0a2a;border-top:none;border-radius:0 0 7px 7px;box-shadow:0 5px 0 #150a25,2px 0 4px rgba(0,0,0,.28),-2px 0 4px rgba(0,0,0,.28);z-index:2;cursor:pointer;transition:transform .08s,box-shadow .08s;} .black-key:active{transform:translateY(4px);box-shadow:0 1px 0 #150a25;}
 
-  .white-key.active{background:linear-gradient(180deg,#FFE566,#FF8C42)!important;border-color:#FF8C42!important;box-shadow:0 6px 0 #d06020,0 8px 16px rgba(255,140,66,.35)!important;}
-  .white-key.active .key-label strong,.white-key.active .key-label span{color:rgba(255,255,255,.76);}
-  .white-key.hit{background:linear-gradient(180deg,#e9d5ff,#C084FC)!important;border-color:#a855f7!important;box-shadow:0 6px 0 #7e22ce!important;animation:bounceKey .3s ease;}
+  .white-key.active{background:linear-gradient(180deg,#FFE566,#FF8C42)!important;border-color:#FF8C42!important;box-shadow:0 6px 0 #d06020,0 8px 16px rgba(255,140,66,.35)!important;}  .white-key.hit{background:linear-gradient(180deg,#e9d5ff,#C084FC)!important;border-color:#a855f7!important;box-shadow:0 6px 0 #7e22ce!important;animation:bounceKey .3s ease;}
   .white-key.miss{background:linear-gradient(180deg,#ffd0d0,#FF6B6B)!important;border-color:#FF6B6B!important;box-shadow:0 6px 0 #c03030!important;animation:shakeKey .3s ease;}
   .black-key.active{background:linear-gradient(180deg,#FFD700,#FF8C42)!important;box-shadow:0 5px 0 #d06020!important;}
   .black-key.hit{background:linear-gradient(180deg,#e9d5ff,#C084FC)!important;box-shadow:0 4px 0 #7e22ce!important;animation:bounceKey .3s ease;}
@@ -143,7 +129,6 @@
     <div class="keyboard-viewport" id="keyboardViewport">
       <div class="piano" id="piano"></div>
     </div>
-    <div class="keyboard-hint">Geser tuts ke kiri atau kanan bila perlu</div>
   </div>
 </div>
 
@@ -376,9 +361,6 @@ function drawStaff(){
   drawNoteHighlights(xTarget,y2,'#C084FC');
 
   drawNote(xStart,y1,'#FF8C42','');
-  const lblY=Math.max(staffBottom+46,y1+38);
-  ctx.font='bold 17px Sniglet,Arial';ctx.fillStyle='#FF8C42';ctx.textAlign='center';
-  ctx.fillText(startNote.name,xStart,lblY);
 
   drawArrow(xStart,y1,xTarget,y2);
 
@@ -414,16 +396,19 @@ const BLACK_LAYOUT=[
   {between:5,pitch:8,name:'G'},
   {between:6,pitch:10,name:'A'}
 ];
-const WHITE_SEQUENCE=['C','D','E','F','G','A','B'];
-const SOLFEGE_LABEL={C:'do',D:'re',E:'mi',F:'fa',G:'sol',A:'la',B:'si'};
-const WHITE_PITCHES=[0,2,4,5,7,9,11];
+const WHITE_SEQUENCE=['C','D','E','F','G','A','B'];const WHITE_PITCHES=[0,2,4,5,7,9,11];
 const PITCH_CLASS={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 const ACCIDENTAL_SHIFT={'':0,'#':1,'b':-1};
 const OCTAVE_COUNT=3;
 const BASE_OCTAVE_INDEX=1;
-let viewportOffset=BASE_OCTAVE_INDEX;
+const KEYBOARD_SCROLL_DELAY=900;
+const KEYBOARD_SCROLL_DURATION=1650;
+let viewportOffset=0;
 let startDisplayPos=12;
 let targetDisplayPos=12;
+let pendingClick=null;
+let roundResultPending=false;
+let endGameTimeout=null;
 
 function getPitchClass(note){
   return (PITCH_CLASS[note.name] + ACCIDENTAL_SHIFT[note.acc] + 12) % 12;
@@ -439,25 +424,71 @@ function computeDisplayPosition(note, referencePos=null, direction=0){
   return displayPos;
 }
 
-function getScrollOffsetForDisplay(displayPos){
-  if(displayPos < BASE_OCTAVE_INDEX*12) return BASE_OCTAVE_INDEX - 1;
-  if(displayPos >= (BASE_OCTAVE_INDEX + 1)*12) return BASE_OCTAVE_INDEX + 1;
-  return BASE_OCTAVE_INDEX;
+function getBaseViewportOffset(){
+  return keyboardViewport.clientWidth || 380;
+}
+
+function getViewportOffsetForNotes(startNote,startPos,targetNote,targetPos){
+  const startEl=getKeyEl(startNote,startPos);
+  const targetEl=getKeyEl(targetNote,targetPos);
+  if(!startEl || !targetEl) return getBaseViewportOffset();
+
+  const viewportWidth=keyboardViewport.clientWidth || 380;
+  const trackWidth=piano.offsetWidth || (viewportWidth*OCTAVE_COUNT);
+  const maxOffset=Math.max(0, trackWidth - viewportWidth);
+  const margin=Math.max(18, viewportWidth*0.08);
+  const minLeft=Math.min(startEl.offsetLeft, targetEl.offsetLeft);
+  const maxRight=Math.max(startEl.offsetLeft + startEl.offsetWidth, targetEl.offsetLeft + targetEl.offsetWidth);
+  const minOffsetNeeded=Math.max(0, maxRight + margin - viewportWidth);
+  const maxOffsetAllowed=Math.min(maxOffset, Math.max(0, minLeft - margin));
+  const centeredOffset=((minLeft + maxRight) / 2) - (viewportWidth / 2);
+
+  if(minOffsetNeeded <= maxOffsetAllowed){
+    return Math.min(maxOffsetAllowed, Math.max(minOffsetNeeded, centeredOffset));
+  }
+  return Math.min(maxOffset, Math.max(0, minOffsetNeeded));
 }
 
 function setKeyboardViewport(offset, animated=true){
   viewportOffset=offset;
-  const viewportWidth=keyboardViewport.clientWidth || 380;
-  keyboardViewport.style.scrollBehavior=animated ? 'smooth' : 'auto';
-  keyboardViewport.scrollLeft=viewportWidth*offset;
+  piano.style.transition=animated ? 'transform 1.65s cubic-bezier(.2,.9,.22,1)' : 'none';
+  piano.style.transform=`translateX(${-offset}px)`;
   if(animated){
     clearTimeout(setKeyboardViewport.resetTimer);
-    setKeyboardViewport.resetTimer=setTimeout(()=>{keyboardViewport.style.scrollBehavior='auto';},460);
+    setKeyboardViewport.resetTimer=setTimeout(()=>{piano.style.transition='none';},KEYBOARD_SCROLL_DURATION);
   }
 }
 
 function resetKeyboardViewport(animated=true){
-  setKeyboardViewport(BASE_OCTAVE_INDEX, animated);
+  clearTimeout(setKeyboardViewport.resetTimer);
+  newRound.awaitingEnable=false;
+  setKeyboardViewport(getBaseViewportOffset(), animated);
+}
+
+function enableAnswerInput(){
+  clearTimeout(newRound.enableClickTimer);
+  if(timeLeft<=0 && !endGameTimeout) return;
+  if(pendingClick){
+    const queuedClick=pendingClick;
+    pendingClick=null;
+    processAnswer(queuedClick);
+    return;
+  }
+  canClick=true;
+}
+
+piano.addEventListener('transitionend',(event)=>{
+  if(event.propertyName!=='transform' || !newRound.awaitingEnable) return;
+  newRound.awaitingEnable=false;
+  enableAnswerInput();
+});
+
+function scheduleEndGame(){
+  clearTimeout(endGameTimeout);
+  endGameTimeout=setTimeout(()=>{
+    endGameTimeout=null;
+    if(!roundResultPending) endGame();
+  },180);
 }
 
 function buildPiano(){
@@ -480,10 +511,7 @@ function buildPiano(){
       key.dataset.noteName=name;
       key.dataset.acc='';
       key.dataset.displayPos=String(displayPos);
-      const label=document.createElement('div');
-      label.classList.add('key-label');
-      label.innerHTML=`<strong>${name}</strong><span>${SOLFEGE_LABEL[name]}</span>`;
-      key.appendChild(label);
+
       key.addEventListener('pointerdown',(e)=>{e.preventDefault();handleClick({
         el:key,
         noteName:name,
@@ -542,6 +570,10 @@ function markActive(note, displayPos){
 // ================================================================
 function newRound(){
   clearKeys();
+  clearTimeout(endGameTimeout);
+  endGameTimeout=null;
+  roundResultPending=false;
+  canClick=false;
   resetKeyboardViewport(false);
   setClefNotePool(Math.random() < 0.5 ? 'treble' : 'bass');
   startNote=NATURALS[Math.floor(Math.random()*NATURALS.length)];
@@ -562,12 +594,34 @@ function newRound(){
 
   markActive(startNote,startDisplayPos);
   drawStaff();
-  canClick=true;
+
+  const targetViewportOffset=getViewportOffsetForNotes(startNote,startDisplayPos,targetNote,targetDisplayPos);
+  const needsScroll=Math.abs(targetViewportOffset-viewportOffset) >= 1;
+  clearTimeout(newRound.enableClickTimer);
+  clearTimeout(newRound.scrollTimer);
+  newRound.awaitingEnable=needsScroll;
+  newRound.scrollTimer=setTimeout(()=>{
+    setKeyboardViewport(targetViewportOffset,needsScroll);
+    if(!needsScroll){
+      newRound.awaitingEnable=false;
+      enableAnswerInput();
+    }
+  },KEYBOARD_SCROLL_DELAY);
+  if(needsScroll){
+    newRound.enableClickTimer=setTimeout(()=>{
+      newRound.awaitingEnable=false;
+      enableAnswerInput();
+    },KEYBOARD_SCROLL_DELAY + KEYBOARD_SCROLL_DURATION + 120);
+  }
 }
 
-function handleClick(clicked){
-  if(!canClick||timeLeft<=0)return;
-  canClick=false;total++;resumeAudio();
+function processAnswer(clicked){
+  canClick=false;
+  roundResultPending=true;
+  clearTimeout(endGameTimeout);
+  endGameTimeout=null;
+  pendingClick=null;
+  total++;resumeAudio();
   const clickedEl = clicked ? clicked.el : null;
   const targetEl = getKeyEl(targetNote,targetDisplayPos);
   const isCorrect = clicked && clicked.noteName===targetNote.name && clicked.acc===targetNote.acc && clicked.displayPos===targetDisplayPos;
@@ -581,7 +635,20 @@ function handleClick(clicked){
     wrong++; playWrong(); showFeedback('💨',false);
   }
   resetKeyboardViewport(true);
-  setTimeout(newRound,650);
+  setTimeout(()=>{
+    roundResultPending=false;
+    if(timeLeft<=0) endGame();
+    else newRound();
+  },650);
+}
+
+function handleClick(clicked){
+  if(timeLeft<=0 && !endGameTimeout) return;
+  if(!canClick){
+    if(newRound.awaitingEnable || endGameTimeout) pendingClick=clicked;
+    return;
+  }
+  processAnswer(clicked);
 }
 
 function clearKeys(){
@@ -598,10 +665,16 @@ function showFeedback(emoji,good){
 function startTimer(){
   timeLeft=30;const tc=document.getElementById('timeCircle');
   tc.textContent=timeLeft;tc.classList.remove('urgent');
+  clearTimeout(endGameTimeout);
+  endGameTimeout=null;
   timerInterval=setInterval(()=>{
     timeLeft--;tc.textContent=timeLeft;
     if(timeLeft<=5){tc.classList.add('urgent');resumeAudio();playUrgentTick();}
-    if(timeLeft<=0){clearInterval(timerInterval);endGame();}
+    if(timeLeft<=0){
+      timeLeft=0;tc.textContent=timeLeft;
+      clearInterval(timerInterval);
+      scheduleEndGame();
+    }
   },1000);
 }
 
@@ -644,6 +717,24 @@ startStaffAnimation();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
